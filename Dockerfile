@@ -1,4 +1,7 @@
-FROM python:3.8-alpine
+FROM python:3.13-alpine
+
+ENV VIRTUAL_ENV=/var/opt/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 RUN apk add --no-cache \
     bash \
@@ -7,16 +10,17 @@ RUN apk add --no-cache \
     openldap-dev \
     openssl-dev \
     postgresql-dev \
+    py3-cryptography \
     python3-dev \
     xmlsec-dev
 
 COPY . /app
 WORKDIR /app
 
-ENV CRYPTOGRAPHY_DONT_BUILD_RUST 1
-RUN python -m pip install --upgrade pip && \
-    pip install -r requirements.txt && \
-    pip install -r requirements-ci.txt && \
+RUN python3 -m venv --system-site-packages ${VIRTUAL_ENV}
+
+RUN pip install -r --no-cache-dir requirements.txt && \
+    pip install -r --no-cache-dir requirements-ci.txt && \
     pip install .
 
 ENV ALERTA_SVR_CONF_FILE /app/alertad.conf
